@@ -291,6 +291,17 @@ Bot.prototype.postTo = function(name, text, params, cb) {
     }.bind(this));
 };
 
+Bot.prototype.uploadText = function(id, filename, content, params) {
+    params = extend({
+        content: content,
+        filetype: 'text',
+        filename: filename,
+        channels: id
+    }, params || {});
+
+    return this._api('files.upload', params, true);
+};
+
 /**
  * Preprocessing of params
  * @param params
@@ -318,12 +329,17 @@ Bot.prototype._preprocessParams = function(params) {
  * @returns {vow.Promise}
  * @private
  */
-Bot.prototype._api = function(methodName, params) {
+Bot.prototype._api = function(methodName, params, multipart) {
 
     var data = {
         url: 'https://slack.com/api/' + methodName,
-        form: this._preprocessParams(params)
     };
+    if (multipart) {
+        params = extend({token: this.token}, params || {});
+        data.formData = params;
+    } else {
+        data.form = this._preprocessParams(params);
+    }
 
     return new Vow.Promise(function(resolve, reject) {
 
