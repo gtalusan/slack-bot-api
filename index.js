@@ -57,6 +57,10 @@ Bot.prototype.connect = function() {
         this.emit('close', data);
     }.bind(this));
 
+    this.ws.on('ping', function(data, flags) {
+        this.ws.pong(data, null, true);
+    }.bind(this));
+
     this.ws.on('message', function(data) {
         try {
             this.emit('message', JSON.parse(data));
