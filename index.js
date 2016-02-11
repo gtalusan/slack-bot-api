@@ -34,6 +34,7 @@ Bot.prototype.login = function() {
         this.users = data.users;
         this.ims = data.ims;
         this.groups = data.groups;
+        this.paddle = null;
 
         this.emit('start');
 
@@ -59,6 +60,12 @@ Bot.prototype.connect = function() {
 
     this.ws.on('ping', function(data, flags) {
         this.ws.pong(data, null, true);
+        if (this.paddle) {
+            clearTimeout(this.paddle);
+        }
+        this.paddle = setTimeout(function() {
+            this.emit('timeout')
+        }.bind(this), 120000);
     }.bind(this));
 
     this.ws.on('message', function(data) {
