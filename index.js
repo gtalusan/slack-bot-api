@@ -44,6 +44,17 @@ Bot.prototype.login = function() {
     }).done();
 };
 
+Bot.prototype.ping = function() {
+    this.ws.ping(null, null, true);
+
+    if (this.paddle) {
+        clearTimeout(this.paddle);
+    }
+    this.paddle = setTimeout(function() {
+        this.emit('timeout')
+    }.bind(this), 120000);
+};
+
 /**
  * Establish a WebSocket connection
  */
@@ -52,6 +63,7 @@ Bot.prototype.connect = function() {
 
     this.ws.on('open', function(data) {
         this.emit('open', data);
+        this.ping();
     }.bind(this));
 
     this.ws.on('close', function(data) {
@@ -66,6 +78,12 @@ Bot.prototype.connect = function() {
         this.paddle = setTimeout(function() {
             this.emit('timeout')
         }.bind(this), 120000);
+    }.bind(this));
+
+    this.ws.on('pong', function(data, flags) {
+        if (this.paddle) {
+            clearTimeout(this.paddle);
+        }
     }.bind(this));
 
     this.ws.on('message', function(data) {
